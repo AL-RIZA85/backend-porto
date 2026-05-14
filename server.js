@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -9,9 +11,9 @@ const app = express();
 app.use(cors())
 app.use(express.json())
 
-mongoose.connect('mongodb://localhost:27017/portofolio')
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
-        console.log('Connected to MongoDB')
+        console.log('MongoDB Connected')
     })
     .catch((err) => {
         console.error('Error connecting to MongoDB:', err)
@@ -39,7 +41,8 @@ app.post('/api/messages', async (req, res) => {
     } catch (err) {
 
         res.status(500).json({
-            success: false
+            success: false,
+            error: err.message
         })
 
     }
@@ -50,13 +53,24 @@ app.post('/api/messages', async (req, res) => {
 // GET MESSAGE
 app.get('/messages', async (req, res) => {
 
-    const messages = await Message.find()
+    try {
 
-    res.json(messages)
+        const messages = await Message.find()
+
+        res.json(messages)
+
+    } catch (err) {
+
+        res.status(500).json({
+            success: false
+        })
+
+    }
 
 })
 
+const PORT = process.env.PORT || 3000
 
-app.listen(3000, () => {
-    console.log('Server running')
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
 })
